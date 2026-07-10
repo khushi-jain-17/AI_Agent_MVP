@@ -1,0 +1,102 @@
+{
+  "issues": [
+    {
+      "key": "MVP-101",
+      "summary": "Implement OAuth Authentication",
+      "description": "Support sign in via Google and GitHub. Store tokens securely.",
+      "type": "Story",
+      "status": "Done",
+      "priority": "High",
+      "assignee": "developer_b",
+      "reporter": "Somya",
+      "created_at": "2026-07-01T08:00:00Z",
+      "updated_at": "2026-07-04T12:00:00Z",
+      "resolution_date": "2026-07-04T12:00:00Z",
+      "story_points": 5
+    },
+    {
+      "key": "MVP-102",
+      "summary": "Payment Gateway Integration",
+      "description": "Integrate Stripe billing, webhooks, and subscription checkouts.",
+      "type": "Story",
+      "status": "In Progress",
+      "priority": "High",
+      "assignee": "Somya",
+      "reporter": "Somya",
+      "created_at": "2026-07-02T10:00:00Z",
+      "updated_at": "2026-07-08T12:00:00Z",
+      "resolution_date": null,
+      "story_points": 8
+    },
+    {
+      "key": "MVP-103",
+      "summary": "User Dashboard UI",
+      "description": "Build user dashboard mockup showing profile details and billing history.",
+      "type": "Story",
+      "status": "Done",
+      "priority": "Medium",
+      "assignee": "Somya",
+      "reporter": "developer_b",
+      "created_at": "2026-07-01T12:00:00Z",
+      "updated_at": "2026-07-05T17:00:00Z",
+      "resolution_date": "2026-07-05T17:00:00Z",
+      "story_points": 3
+    },
+    {
+      "key": "MVP-104",
+      "summary": "CSS alignment issues in dashboard navigation bar",
+      "description": "Menu links are overlapping on screens smaller than 768px wide.",
+      "type": "Bug",
+      "status": "To Do",
+      "priority": "Low",
+      "assignee": "developer_b",
+      "reporter": "developer_c",
+      "created_at": "2026-07-06T09:00:00Z",
+      "updated_at": "2026-07-06T09:00:00Z",
+      "resolution_date": null,
+      "story_points": 2
+    },
+    {
+      "key": "MVP-105",
+      "summary": "Memory leak in notification service broker connection loops",
+      "description": "CPU spikes to 100% when rabbitmq reconnects frequently due to leaks.",
+      "type": "Bug",
+      "status": "Done",
+      "priority": "Critical",
+      "assignee": "developer_c",
+      "reporter": "developer_b",
+      "created_at": "2026-07-07T11:00:00Z",
+      "updated_at": "2026-07-08T09:30:00Z",
+      "resolution_date": "2026-07-08T09:30:00Z",
+      "story_points": 3
+    },
+    {
+      "key": "MVP-106",
+      "summary": "Email notification template design",
+      "description": "Design sleek transaction templates using standard HTML/CSS.",
+      "type": "Story",
+      "status": "In Review",
+      "priority": "Medium",
+      "assignee": "developer_c",
+      "reporter": "Somya",
+      "created_at": "2026-07-04T15:00:00Z",
+      "updated_at": "2026-07-09T14:00:00Z",
+      "resolution_date": null,
+      "story_points": 5
+    },
+    {
+      "key": "MVP-107",
+      "summary": "Release 1.0 Milestone Epic",
+      "description": "Epic tracking all authentication, dashboard visual features, and billing infrastructure.",
+      "type": "Epic",
+      "status": "In Progress",
+      "priority": "High",
+      "assignee": null,
+      "reporter": "Somya",
+      "created_at": "2026-06-30T08:00:00Z",
+      "updated_at": "2026-07-09T16:00:00Z",
+      "resolution_date": null,
+      "story_points": 0
+    }
+  ]
+}
