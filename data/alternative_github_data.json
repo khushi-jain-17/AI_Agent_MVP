@@ -1,0 +1,62 @@
+{
+  "commits": [
+    {
+      "sha": "z9y8x7w6v5u4t3s2r1q0",
+      "message": "MVP-201: Set up Docker configuration and deploy pipeline to staging",
+      "author": "alex",
+      "date": "2026-07-09T08:00:00Z",
+      "additions": 80,
+      "deletions": 5,
+      "files_changed": ["Dockerfile", ".github/workflows/deploy.yml"]
+    },
+    {
+      "sha": "y8x7w6v5u4t3s2r1q0p9",
+      "message": "MVP-202: Configure SSL certificate verification and redirection rules",
+      "author": "developer_b",
+      "date": "2026-07-09T10:30:00Z",
+      "additions": 45,
+      "deletions": 2,
+      "files_changed": ["nginx/default.conf"]
+    },
+    {
+      "sha": "x7w6v5u4t3s2r1q0p9o8",
+      "message": "MVP-203: Domain name DNS resolution mapping configurations",
+      "author": "developer_b",
+      "date": "2026-07-09T14:15:00Z",
+      "additions": 12,
+      "deletions": 0,
+      "files_changed": ["terraform/dns.tf"]
+    }
+  ],
+  "pull_requests": [
+    {
+      "id": 10,
+      "number": 51,
+      "title": "MVP-201: Staging Deployment Pipeline Setup",
+      "description": "Dockerizes application structure and deploys to staging environments on pushes to main.",
+      "state": "merged",
+      "creator": "alex",
+      "created_at": "2026-07-09T08:15:00Z",
+      "closed_at": "2026-07-09T09:45:00Z",
+      "merged_at": "2026-07-09T09:45:00Z",
+      "assignee": "alex",
+      "reviewers": ["developer_b"],
+      "comments_count": 2
+    },
+    {
+      "id": 11,
+      "number": 52,
+      "title": "MVP-202: Nginx SSL Configurations",
+      "description": "Enforces HTTPS connections and configures certbot validation endpoints.",
+      "state": "merged",
+      "creator": "developer_b",
+      "created_at": "2026-07-09T11:00:00Z",
+      "closed_at": "2026-07-09T12:00:00Z",
+      "merged_at": "2026-07-09T12:00:00Z",
+      "assignee": "developer_b",
+      "reviewers": ["alex"],
+      "comments_count": 0
+    }
+  ],
+  "issues": []
+}

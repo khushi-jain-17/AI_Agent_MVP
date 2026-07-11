@@ -1,16 +1,34 @@
+import json
+import tempfile
 from pathlib import Path
+from unittest.mock import patch, MagicMock
 from langgraph.graph import StateGraph
+
 from src.workflow.graph import app
-from src.models.state import AgentState
+from src.models.state import AgentState, AnalysisResult, ValidationResult
 from src.config import settings
 
-def test_workflow_end_to_end():
+@patch("src.agents.base.BaseAgent._call_llm")
+@patch("src.agents.base.BaseAgent._call_llm_text")
+def test_workflow_end_to_end(mock_call_llm_text, mock_call_llm):
     github_path = Path(__file__).parent.parent / "data" / "sample_github_data.json"
     jira_path = Path(__file__).parent.parent / "data" / "sample_jira_data.json"
     
+    # Merge datasets to test combined dynamic parsing
+    with open(github_path, "r", encoding="utf-8") as f:
+        gh = json.load(f)
+    with open(jira_path, "r", encoding="utf-8") as f:
+        jr = json.load(f)
+    
+    combined = {**gh, **jr}
+    
+    # Use context manager to handle temporary file safely
+    with tempfile.NamedTemporaryFile("w", delete=False, suffix=".json", encoding="utf-8") as tmp:
+        json.dump(combined, tmp)
+        tmp_path = tmp.name
+        
     initial_state: AgentState = {
-        "raw_github_filepath": str(github_path),
-        "raw_jira_filepath": str(jira_path),
+        "raw_filepath": tmp_path,
         "github_data": None,
         "jira_data": None,
         "metrics": None,
@@ -23,9 +41,32 @@ def test_workflow_end_to_end():
         "errors": []
     }
     
-    # Save original settings and force mock_mode to True
-    original_mock = settings.mock_mode
-    settings.mock_mode = True
+    # Configure mock behaviors to simulate LLM endpoints offline
+    mock_call_llm_text.return_value = "# Mock Markdown Status Report"
+    
+    mock_call_llm.side_effect = [
+        AnalysisResult(
+            executive_summary="The sprint completion rate is 42.31%.",
+            velocity_analysis="Completed 11 out of 26 SP.",
+            bottleneck_insights=["PR lead time is 30.2 hours."],
+            quality_status="Codebase is stable.",
+            recommendations=["Add estimates."]
+        ),
+        ValidationResult(
+            is_valid=False,
+            errors=["Mock validation failure to trigger correction loop."],
+            suggestions=["Please fix stats."]
+        ),
+        ValidationResult(
+            is_valid=True,
+            errors=[],
+            suggestions=[]
+        )
+    ]
+    
+    # Temporarily set API key settings to pass initialization checks if run offline
+    original_key = settings.openai_api_key
+    settings.openai_api_key = "mock-key-for-testing"
     
     try:
         final_state = app.invoke(initial_state)
@@ -36,47 +77,52 @@ def test_workflow_end_to_end():
         assert final_state["jira_data"] is not None
         assert final_state["metrics"] is not None
         assert final_state["analysis"] is not None
-        assert final_state["report"] is not None
+        assert final_state["report"] == "# Mock Markdown Status Report"
         assert final_state["validation"] is not None
         
-        # Check self-correction triggered and executed correctly
-        # The mock validator fails validation on revision 0 and passes on revision 1,
-        # so revision_count should end at exactly 1.
+        # Verify correction loop ran exactly once
         assert final_state["revision_count"] == 1
         assert final_state["validation"].is_valid is True
         
-        # Logs should verify loops
-        logs = final_state["logs"]
-        assert any("Revision incremented to 1" in log for log in logs)
-        assert any("Is Valid: True" in log for log in logs)
-        
     finally:
-        settings.mock_mode = original_mock
+        settings.openai_api_key = original_key
+        # Clean up temporary file
+        try:
+            Path(tmp_path).unlink()
+        except OSError:
+            pass
         
-def test_workflow_max_revisions():
+@patch("src.agents.base.BaseAgent._call_llm")
+@patch("src.agents.base.BaseAgent._call_llm_text")
+def test_workflow_max_revisions(mock_call_llm_text, mock_call_llm):
     github_path = Path(__file__).parent.parent / "data" / "sample_github_data.json"
     jira_path = Path(__file__).parent.parent / "data" / "sample_jira_data.json"
     
-    # Mocking validator to always fail validation to test max revisions
-    from src.workflow.graph import workflow, parse_data_node, analyze_metrics_node, draft_report_node, increment_revision_node, route_after_validation
-    from src.models.state import ValidationResult
+    with open(github_path, "r", encoding="utf-8") as f:
+        gh = json.load(f)
+    with open(jira_path, "r", encoding="utf-8") as f:
+        jr = json.load(f)
     
-    def mock_always_invalid_node(state):
-        return {
-            "validation": ValidationResult(
-                is_valid=False,
-                errors=["Force failure for testing max limits."],
-                suggestions=[]
-            ),
-            "logs": state.get("logs", []) + ["Injected validation failure."]
-        }
+    combined = {**gh, **jr}
+    with tempfile.NamedTemporaryFile("w", delete=False, suffix=".json", encoding="utf-8") as tmp:
+        json.dump(combined, tmp)
+        tmp_path = tmp.name
         
-    # Build a temporary graph to avoid polluting global `app`
+    from src.workflow.graph import parse_data_node, analyze_metrics_node, draft_report_node, increment_revision_node, route_after_validation
+    
+    # Stub nodes and build a temporary graph to evaluate max revision thresholds
     temp_graph = StateGraph(AgentState)
     temp_graph.add_node("parser", parse_data_node)
     temp_graph.add_node("analyzer", analyze_metrics_node)
     temp_graph.add_node("reporter", draft_report_node)
-    temp_graph.add_node("validator", mock_always_invalid_node)
+    temp_graph.add_node("validator", lambda state: {
+        "validation": ValidationResult(
+            is_valid=False,
+            errors=["Force failure to trigger max loops."],
+            suggestions=[]
+        ),
+        "logs": state.get("logs", []) + ["Injected validation failure."]
+    })
     temp_graph.add_node("increment_revision", increment_revision_node)
     
     temp_graph.add_edge("parser", "analyzer")
@@ -95,10 +141,18 @@ def test_workflow_max_revisions():
     
     temp_app = temp_graph.compile()
     
-    # Set max revisions to 2 for quick limit check
+    # Configure stubs
+    mock_call_llm_text.return_value = "# Mock Markdown Status Report"
+    mock_call_llm.return_value = AnalysisResult(
+        executive_summary="Executive summary stats.",
+        velocity_analysis="Velocity stats.",
+        bottleneck_insights=[],
+        quality_status="Quality stats.",
+        recommendations=[]
+    )
+    
     initial_state: AgentState = {
-        "raw_github_filepath": str(github_path),
-        "raw_jira_filepath": str(jira_path),
+        "raw_filepath": tmp_path,
         "github_data": None,
         "jira_data": None,
         "metrics": None,
@@ -111,13 +165,17 @@ def test_workflow_max_revisions():
         "errors": []
     }
     
-    original_mock = settings.mock_mode
-    settings.mock_mode = True
+    original_key = settings.openai_api_key
+    settings.openai_api_key = "mock-key-for-testing"
     
     try:
         final_state = temp_app.invoke(initial_state)
-        # Should stop after reaching max revisions (2) even though it keeps failing
+        # Should stop after reaching max revisions (2)
         assert final_state["revision_count"] == 2
         assert final_state["validation"].is_valid is False
     finally:
-        settings.mock_mode = original_mock
+        settings.openai_api_key = original_key
+        try:
+            Path(tmp_path).unlink()
+        except OSError:
+            pass

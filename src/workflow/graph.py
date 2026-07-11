@@ -58,17 +58,17 @@ def route_after_validation(state: AgentState) -> str:
     logger.info(f"[Workflow] Report failed validation with {len(validation.errors)} error(s). Routing to self-correction.")
     return "increment_revision"
 
-# Construct the StateGraph
+# StateGraph
 workflow = StateGraph(AgentState)
 
-# Add Nodes
+# Nodes
 workflow.add_node("parser", parse_data_node)
 workflow.add_node("analyzer", analyze_metrics_node)
 workflow.add_node("reporter", draft_report_node)
 workflow.add_node("validator", validate_report_node)
 workflow.add_node("increment_revision", increment_revision_node)
 
-# Add Edges
+# Edges
 workflow.add_edge(START, "parser")
 workflow.add_edge("parser", "analyzer")
 workflow.add_edge("analyzer", "reporter")

@@ -2,12 +2,11 @@ from typing import Dict, Any
 from src.agents.base import BaseAgent
 from src.models.state import AgentState, ValidationResult, ParsedMetrics
 from src.utils.logger import logger
-from src.config import settings
 
 VALIDATOR_SYSTEM_PROMPT = """You are an elite Quality Assurance and Verification Agent.
 Your role is to cross-examine the drafted Markdown report against the quantitative ParsedMetrics and raw data.
 You must flag any mathematical inconsistencies, missed blockers, incorrect counts, or formatting errors.
-You must return your output matches the ValidationResult schema exactly."""
+You must return your output strictly matched to the ValidationResult schema."""
 
 class ValidatorAgent(BaseAgent):
     def __init__(self):
@@ -20,7 +19,6 @@ class ValidatorAgent(BaseAgent):
         
         metrics = state["metrics"]
         report = state["report"]
-        revision_count = state.get("revision_count", 0)
         
         if not metrics or not report:
             err_msg = "Cannot run Validator without parsed metrics and a draft report."
@@ -28,23 +26,15 @@ class ValidatorAgent(BaseAgent):
             errors.append(err_msg)
             return {"errors": errors}
 
-        validation_result = None
-        
-        # If live OpenAI client is available, call it
-        if self.client and not settings.mock_mode:
-            try:
-                prompt = self._build_prompt(metrics, report)
-                validation_result = self._call_llm(prompt, ValidationResult)
-                logs.append(f"Validation completed. Is Valid: {validation_result.is_valid}.")
-            except Exception as e:
-                err_msg = f"LLM validation failed: {e}. Falling back to simulation."
-                logger.warning(f"[{self.name}] {err_msg}")
-                logs.append(err_msg)
-
-        # Fallback simulation mode
-        if not validation_result:
-            validation_result = self._simulate_validation(metrics, report, revision_count)
-            logs.append(f"Simulation validation completed. Is Valid: {validation_result.is_valid}. (Revision {revision_count})")
+        try:
+            prompt = self._build_prompt(metrics, report)
+            validation_result = self._call_llm(prompt, ValidationResult)
+            logs.append(f"Validation completed. Is Valid: {validation_result.is_valid}.")
+        except Exception as e:
+            err_msg = f"LLM validation failed: {e}"
+            logger.error(f"[{self.name}] {err_msg}")
+            errors.append(err_msg)
+            return {"errors": errors, "logs": logs}
 
         return {
             "validation": validation_result,
@@ -76,26 +66,3 @@ Generate a ValidationResult:
 - Set is_valid to true if all figures are correct.
 - If there are discrepancies (e.g. wrong counts, mismatched percentages, ignored critical blockers), list them in errors and set is_valid to false.
 """
-
-    def _simulate_validation(self, metrics: ParsedMetrics, report: str, revision_count: int) -> ValidationResult:
-        """Simulates validation behavior. To demonstrate self-correction, it fails on revision 0 and succeeds on revision 1."""
-        if revision_count == 0:
-            # First draft: return an error to trigger a self-correction loop
-            return ValidationResult(
-                is_valid=False,
-                errors=[
-                    f"Report draft omitted the developer commit breakdown statistics table.",
-                    f"Sprint completion velocity mismatch: draft says 60% but metrics say {metrics.sprint_velocity_percent}%."
-                ],
-                suggestions=[
-                    "Please ensure the exact metrics table matches the raw numbers.",
-                    "Explicitly append the developer contribution commit count metrics."
-                ]
-            )
-        else:
-            # Second draft (or subsequent): validate successfully
-            return ValidationResult(
-                is_valid=True,
-                errors=[],
-                suggestions=["Formatting and metrics are verified and consistent with Jira and GitHub datasets."]
-            )

@@ -1,5 +1,6 @@
 import argparse
 import sys
+from datetime import datetime
 from pathlib import Path
 from rich.console import Console
 from rich.panel import Panel
@@ -20,27 +21,16 @@ def parse_args() -> argparse.Namespace:
         description="AI Agent MVP Tracker - Multi-Agent Dev Status pipeline using LangGraph."
     )
     parser.add_argument(
-        "--github",
+        "--input",
         type=str,
         default="data/sample_github_data.json",
-        help="Path to the JSON file containing GitHub event data"
-    )
-    parser.add_argument(
-        "--jira",
-        type=str,
-        default="data/sample_jira_data.json",
-        help="Path to the JSON file containing Jira tickets data"
+        help="Path to the JSON file containing GitHub or Jira dataset to analyze"
     )
     parser.add_argument(
         "--output",
         type=str,
-        default="sample_output/report.md",
+        default=None,
         help="Path where the final markdown status report will be written"
-    )
-    parser.add_argument(
-        "--mock",
-        action="store_true",
-        help="Force execution in simulation mode (bypasses live OpenAI API calls)"
     )
     parser.add_argument(
         "--max-revisions",
@@ -53,17 +43,13 @@ def parse_args() -> argparse.Namespace:
 def main():
     args = parse_args()
     
-    # Configure mock mode
-    if args.mock:
-        settings.mock_mode = True
-        logger.info("[Main] Forcing simulation mock mode via CLI flag.")
-    elif not settings.openai_api_key:
-        settings.mock_mode = True
-        logger.info("[Main] OPENAI_API_KEY not found in environment. Automatically falling back to simulation mock mode.")
-    else:
-        settings.mock_mode = False
-        logger.info("[Main] OPENAI_API_KEY detected. Running live LLM execution.")
+    # Configure API check
+    if not settings.openai_api_key:
+        console.print("[bold red]Configuration Error:[/bold red] OPENAI_API_KEY is not configured in .env or environment variables.")
+        console.print("Please configure a valid API key to run this official pipeline.")
+        sys.exit(1)
         
+    logger.info("[Main] OPENAI_API_KEY detected. Running live LLM execution.")
     settings.max_revisions = args.max_revisions
     
     console.print(Panel.fit(
@@ -72,21 +58,32 @@ def main():
         border_style="cyan"
     ))
     
-    # Verify input paths
-    github_path = Path(args.github)
-    jira_path = Path(args.jira)
-    
-    if not github_path.exists():
-        console.print(f"[bold red]Error:[/bold red] GitHub file not found at [yellow]{github_path.absolute()}[/yellow]")
-        sys.exit(1)
-    if not jira_path.exists():
-        console.print(f"[bold red]Error:[/bold red] Jira file not found at [yellow]{jira_path.absolute()}[/yellow]")
+    # Dynamic Input Selection
+    # If run directly with no command-line arguments, prompt the user interactively
+    if len(sys.argv) == 1:
+        input_val = ""
+        while not input_val:
+            input_val = input("Enter a custom path: ").strip()
+            if not input_val:
+                console.print("[yellow]Path cannot be empty. Please enter a valid JSON file path.[/yellow]")
+        
+        # Output path selection
+        default_out = f"sample_output/report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+        output_input = input(f"Enter output report path [{default_out}]: ").strip()
+        output_val = output_input if output_input else default_out
+    else:
+        input_val = args.input
+        output_val = args.output if args.output else "sample_output/report.md"
+        
+    # Verify input path
+    file_path = Path(input_val)
+    if not file_path.exists():
+        console.print(f"[bold red]Error:[/bold red] JSON file not found at [yellow]{file_path.absolute()}[/yellow]")
         sys.exit(1)
 
     # Initialize agent state
     initial_state: AgentState = {
-        "raw_github_filepath": str(github_path.absolute()),
-        "raw_jira_filepath": str(jira_path.absolute()),
+        "raw_filepath": str(file_path.absolute()),
         "github_data": None,
         "jira_data": None,
         "metrics": None,
@@ -138,7 +135,7 @@ def main():
     # Save Report
     report = final_state.get("report")
     if report:
-        output_path = Path(args.output)
+        output_path = Path(output_val)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         
         try:

@@ -99,20 +99,15 @@ Create a `.env` file in the project root to use live OpenAI LLM execution:
 OPENAI_API_KEY=your-api-key-here
 ```
 
-*Note: If no API key is specified, the system **automatically falls back to Simulation Mode**. This allows you to evaluate the multi-agent orchestration, self-correction routing, error logs, and data flows immediately without requiring an API key.*
-
 ### 3. Running the Pipeline
 Execute the main script from the root directory:
 
 ```bash
-# Run with automatic mode detection (uses API key if available, else simulation)
+# Run in Interactive Mode (prompts you for GitHub, Jira, and output paths)
 python main.py
 
-# Force Simulation Mode explicitly
-python main.py --mock
-
-# Configure custom input datasets and output report paths
-python main.py --github data/sample_github_data.json --jira data/sample_jira_data.json --output sample_output/report.md
+# Run in Direct CLI Mode (bypasses prompts, ideal for scripts/automation)
+python main.py --github path/to/github.json --jira path/to/jira.json --output path/to/report.md
 ```
 
 ---
@@ -123,7 +118,7 @@ The repository comes equipped with automated unit and integration tests verifyin
 
 To execute the tests:
 ```bash
-python -m pytest tests/
+python -m pytest tests
 ```
 
 ---

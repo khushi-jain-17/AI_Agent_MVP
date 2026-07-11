@@ -6,7 +6,7 @@
       "author": "developer_b",
       "date": "2026-07-01T09:30:00Z",
       "additions": 150,
-      "deletions": 10,
+      "deletions": 8,
       "files_changed": ["src/auth.py", "config/auth.yaml"]
     },
     {
@@ -14,14 +14,14 @@
       "message": "MVP-101: Add Google and GitHub OAuth providers integration",
       "author": "developer_b",
       "date": "2026-07-02T14:15:00Z",
-      "additions": 230,
-      "deletions": 15,
+      "additions": 227,
+      "deletions": 13,
       "files_changed": ["src/auth.py", "tests/test_auth.py"]
     },
     {
       "sha": "c3d4e5f6g7h8i9j0k1l2",
       "message": "MVP-103: Create responsive User Dashboard components in frontend",
-      "author": "Somya",
+      "author": "alex",
       "date": "2026-07-03T11:00:00Z",
       "additions": 410,
       "deletions": 5,
@@ -39,7 +39,7 @@
     {
       "sha": "e5f6g7h8i9j0k1l2m3n4",
       "message": "MVP-102: Initialize Stripe SDK and billing schema",
-      "author": "Somya",
+      "author": "alex",
       "date": "2026-07-05T16:45:00Z",
       "additions": 312,
       "deletions": 0,
@@ -66,7 +66,7 @@
     {
       "sha": "h8i9j0k1l2m3n4o5p6q7",
       "message": "MVP-102: Implement payment intent webhook handling",
-      "author": "Somya",
+      "author": "alex",
       "date": "2026-07-08T11:55:00Z",
       "additions": 189,
       "deletions": 12,
@@ -85,7 +85,7 @@
       "closed_at": "2026-07-04T12:00:00Z",
       "merged_at": "2026-07-04T12:00:00Z",
       "assignee": "developer_b",
-      "reviewers": ["Somya"],
+      "reviewers": ["alex"],
       "comments_count": 3
     },
     {
@@ -94,11 +94,11 @@
       "title": "MVP-102: Stripe Payment Gateway Integration",
       "description": "Connecting billing backend with Stripe webhooks and payment checkout pages.",
       "state": "open",
-      "creator": "Somya",
+      "creator": "alex",
       "created_at": "2026-07-05T18:00:00Z",
       "closed_at": null,
       "merged_at": null,
-      "assignee": "Somya",
+      "assignee": "alex",
       "reviewers": ["developer_b"],
       "comments_count": 5
     },
@@ -113,7 +113,7 @@
       "closed_at": "2026-07-08T09:30:00Z",
       "merged_at": "2026-07-08T09:30:00Z",
       "assignee": "developer_c",
-      "reviewers": ["developer_b", "Somya"],
+      "reviewers": ["developer_b", "alex"],
       "comments_count": 1
     }
   ],
@@ -124,8 +124,8 @@
       "title": "Bug: Stripe Webhook signatures fail in local dev environment",
       "description": "Signature verification throws exception when using stripe-cli listening. We need local key bypassing logic in dev mode.",
       "state": "open",
-      "creator": "Somya",
-      "assignees": ["Somya"],
+      "creator": "alex",
+      "assignees": ["alex"],
       "labels": ["bug", "stripe"],
       "created_at": "2026-07-07T10:10:00Z",
       "closed_at": null

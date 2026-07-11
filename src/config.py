@@ -18,10 +18,10 @@ class Settings(BaseSettings):
 
     # API Keys & Agent config
     openai_api_key: Optional[str] = os.getenv("OPENAI_API_KEY")
-    mock_mode: bool = False
+    openai_base_url: Optional[str] = os.getenv("OPENAI_BASE_URL")
     
     # Defaults
-    default_model: str = "gpt-4o-mini"
+    default_model: str = os.getenv("DEFAULT_MODEL", "gpt-4o-mini")
     max_revisions: int = 3
     
     # Logging

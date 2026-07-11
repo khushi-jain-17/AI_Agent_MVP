@@ -33,8 +33,7 @@ class ValidationResult(BaseModel):
 
 class AgentState(TypedDict):
     # Inputs
-    raw_github_filepath: str
-    raw_jira_filepath: str
+    raw_filepath: str
     
     # Structured representations
     github_data: Optional[GitHubData]

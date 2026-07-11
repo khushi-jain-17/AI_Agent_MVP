@@ -1,7 +1,8 @@
+from unittest.mock import MagicMock
 from src.agents.analyzer import AnalyzerAgent
-from src.models.state import AgentState, ParsedMetrics
+from src.models.state import AgentState, ParsedMetrics, AnalysisResult
 
-def test_analyzer_simulation():
+def test_analyzer_run():
     metrics = ParsedMetrics(
         total_tickets=10,
         completed_tickets=6,
@@ -16,7 +17,7 @@ def test_analyzer_simulation():
         average_pr_lead_time_hours=26.5,
         commits_count=15,
         linked_commits_count=12,
-        developer_commit_counts={"Somya": 10, "dev_b": 5},
+        developer_commit_counts={"alex": 10, "dev_b": 5},
         bottlenecks=["Blocker: Ticket MVP-123 is blocked by payment gateway API down time."]
     )
     
@@ -36,15 +37,17 @@ def test_analyzer_simulation():
     }
     
     agent = AnalyzerAgent()
-    # Force settings mock_mode inside test
-    from src.config import settings
-    original_mock = settings.mock_mode
-    settings.mock_mode = True
+    
+    # Mock the LLM call directly for clean unit testing without external APIs
+    agent._call_llm = MagicMock(return_value=AnalysisResult(
+        executive_summary="The sprint velocity is at 60.0% completion rate.",
+        velocity_analysis="Completed 18 out of 30 SP.",
+        bottleneck_insights=["PR lead time is 26.5 hours."],
+        quality_status="Stable codebase.",
+        recommendations=["Refine story estimates."]
+    ))
     
     result = agent.run(state)
-    
-    # Restore settings
-    settings.mock_mode = original_mock
     
     assert not result.get("errors")
     assert result["analysis"] is not None

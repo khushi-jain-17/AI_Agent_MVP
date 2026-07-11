@@ -11,27 +11,30 @@ class BaseAgent:
     def __init__(self, name: str, system_prompt: str):
         self.name = name
         self.system_prompt = system_prompt
-        self.client: Optional[OpenAI] = None
         
-        # Initialize OpenAI client if not in mock mode and API key exists
-        if not settings.mock_mode and settings.openai_api_key:
-            try:
-                self.client = OpenAI(api_key=settings.openai_api_key)
-                logger.info(f"[{self.name}] OpenAI client initialized successfully.")
-            except Exception as e:
-                logger.warning(f"[{self.name}] Failed to initialize OpenAI client: {e}. Falling back to Simulation Mode.")
-        else:
-            logger.info(f"[{self.name}] Running in Simulation Mode.")
+        # Verify API Key is present for official run
+        if not settings.openai_api_key:
+            raise ValueError(
+                f"[{self.name}] Configuration Error: Missing 'OPENAI_API_KEY'. "
+                "Please configure a valid API key in your .env file or environment variables to run in live mode."
+            )
+            
+        try:
+            self.client = OpenAI(
+                api_key=settings.openai_api_key,
+                base_url=settings.openai_base_url
+            )
+            logger.info(f"[{self.name}] OpenAI-compatible client initialized successfully.")
+        except Exception as e:
+            logger.error(f"[{self.name}] Failed to initialize OpenAI client: {e}")
+            raise e
 
     def _call_llm(
         self, 
         prompt: str, 
         response_model: Type[T]
     ) -> T:
-        """Calls the OpenAI client with structured outputs, or raises ValueError if not available."""
-        if not self.client:
-            raise ValueError("LLM client not initialized. Must run in Mock/Simulation Mode.")
-            
+        """Calls the OpenAI client with structured outputs."""
         logger.info(f"[{self.name}] Dispatching structured LLM call...")
         try:
             completion = self.client.beta.chat.completions.parse(
@@ -52,9 +55,6 @@ class BaseAgent:
 
     def _call_llm_text(self, prompt: str) -> str:
         """Calls the OpenAI client returning raw text response."""
-        if not self.client:
-            raise ValueError("LLM client not initialized. Must run in Mock/Simulation Mode.")
-            
         logger.info(f"[{self.name}] Dispatching text LLM call...")
         try:
             completion = self.client.chat.completions.create(
