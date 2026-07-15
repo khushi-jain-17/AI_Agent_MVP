@@ -7,6 +7,7 @@ REPORTER_SYSTEM_PROMPT = """You are a Technical Writer and Communications Specia
 Your goal is to compile structured PM analysis and raw development metrics into a comprehensive, beautifully formatted markdown MVP status report.
 Your output must be the raw Markdown text of the report. Use tables, bold headers, and structured bullet lists."""
 
+
 class ReporterAgent(BaseAgent):
     def __init__(self):
         super().__init__(name="Status Reporter", system_prompt=REPORTER_SYSTEM_PROMPT)

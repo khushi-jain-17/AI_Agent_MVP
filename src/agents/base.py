@@ -43,7 +43,8 @@ class BaseAgent:
                     {"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": prompt}
                 ],
-                response_format=response_model
+                response_format=response_model,
+                max_tokens=4000
             )
             parsed_response = completion.choices[0].message.parsed
             if parsed_response is None:
@@ -62,7 +63,8 @@ class BaseAgent:
                 messages=[
                     {"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": prompt}
-                ]
+                ],
+                max_tokens=4000
             )
             return completion.choices[0].message.content or ""
         except Exception as e:
