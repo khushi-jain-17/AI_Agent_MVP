@@ -67,10 +67,8 @@ def main():
             if not input_val:
                 console.print("[yellow]Path cannot be empty. Please enter a valid JSON file path.[/yellow]")
         
-        # Output path selection
-        default_out = f"sample_output/report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
-        output_input = input(f"Enter output report path [{default_out}]: ").strip()
-        output_val = output_input if output_input else default_out
+        # Output path selection - automatic without prompting the user
+        output_val = f"sample_output/report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
     else:
         input_val = args.input
         output_val = args.output if args.output else "sample_output/report.md"

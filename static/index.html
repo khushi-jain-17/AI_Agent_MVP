@@ -1,0 +1,1904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent MVP Tracker - Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --bg-base: #0b0c16;
+            --bg-surface: rgba(22, 24, 47, 0.6);
+            --bg-surface-hover: rgba(32, 35, 68, 0.8);
+            --border-glow: rgba(139, 92, 246, 0.2);
+            --border-glow-active: rgba(139, 92, 246, 0.6);
+            --text-primary: #f3f4f6;
+            --text-muted: #9ca3af;
+            --color-purple: #8b5cf6;
+            --color-pink: #ec4899;
+            --color-blue: #3b82f6;
+            --color-green: #10b981;
+            --color-red: #ef4444;
+            --color-warning: #f59e0b;
+            --shadow-neon: 0 0 20px rgba(139, 92, 246, 0.15);
+            --shadow-neon-strong: 0 0 30px rgba(139, 92, 246, 0.35);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', 'Outfit', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.1) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(59, 130, 246, 0.05) 0px, transparent 50%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            padding: 1.25rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(11, 12, 22, 0.8);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            background: linear-gradient(135deg, var(--color-purple), var(--color-pink));
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .logo-icon i {
+            color: white;
+            font-size: 1.25rem;
+        }
+
+        .logo-text h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(to right, #ffffff, #e0e7ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-text p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .header-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .badge-live {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--color-green);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 0.35rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .badge-live .pulse-dot {
+            width: 6px;
+            height: 6px;
+            background-color: var(--color-green);
+            border-radius: 50%;
+            animation: pulse-ring 1.5s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .sidebar-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .glass-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-glow);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(139, 92, 246, 0.3);
+            box-shadow: var(--shadow-neon);
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #ffffff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.75rem;
+        }
+
+        .panel-title i {
+            color: var(--color-purple);
+        }
+
+        /* Tabs for input selection */
+        .input-tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.25rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.5rem 0.25rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+        }
+
+        .tab-btn.active {
+            background: rgba(139, 92, 246, 0.2);
+            color: #ffffff;
+            border: 1px solid rgba(139, 92, 246, 0.25);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Drag & Drop upload zone */
+        .upload-zone {
+            border: 2px dashed rgba(139, 92, 246, 0.3);
+            border-radius: 1rem;
+            padding: 2.25rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--color-purple);
+            background: rgba(139, 92, 246, 0.05);
+            box-shadow: inset 0 0 15px rgba(139, 92, 246, 0.1);
+        }
+
+        .upload-zone i {
+            font-size: 2.25rem;
+            color: var(--color-purple);
+            opacity: 0.8;
+            transition: transform 0.2s ease;
+        }
+
+        .upload-zone:hover i {
+            transform: translateY(-4px);
+            opacity: 1;
+        }
+
+        .upload-zone h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .upload-zone p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .file-info {
+            display: none;
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            margin-top: 1rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .file-info-text {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-primary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-info-text i {
+            color: var(--color-green);
+        }
+
+        .remove-file-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.2rem;
+            border-radius: 0.25rem;
+            display: flex;
+        }
+
+        .remove-file-btn:hover {
+            color: var(--color-red);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .select-input, .text-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: white;
+            font-size: 0.85rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .select-input:focus, .text-input:focus {
+            border-color: var(--color-purple);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .slider-container {
+            background: rgba(0, 0, 0, 0.15);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .slider-badge {
+            background: var(--color-purple);
+            color: white;
+            padding: 0.15rem 0.5rem;
+            border-radius: 0.35rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .slider-input {
+            width: 100%;
+            accent-color: var(--color-purple);
+            cursor: pointer;
+            margin-top: 0.25rem;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, var(--color-purple), var(--color-pink));
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            padding: 0.9rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-neon-strong);
+            filter: brightness(1.1);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-submit:disabled {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Server log stream in sidebar */
+        .server-logs-card {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            max-height: 380px;
+        }
+
+        .log-console {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.72rem;
+            color: var(--color-blue);
+            overflow-y: auto;
+            flex: 1;
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .log-item {
+            border-left: 2px solid var(--color-purple);
+            padding-left: 0.5rem;
+            line-height: 1.3;
+        }
+
+        .log-item.error {
+            border-color: var(--color-red);
+            color: var(--color-red);
+        }
+
+        .log-item.success {
+            border-color: var(--color-green);
+            color: var(--color-green);
+        }
+
+        /* Right column content area */
+        .content-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            overflow: hidden;
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 6rem 2rem;
+            height: 100%;
+        }
+
+        .empty-icon {
+            background: rgba(139, 92, 246, 0.05);
+            border: 1px solid var(--border-glow);
+            width: 5rem;
+            height: 5rem;
+            border-radius: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-neon);
+            animation: bounce-slow 4s infinite ease-in-out;
+        }
+
+        @keyframes bounce-slow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .empty-icon i {
+            font-size: 2.25rem;
+            color: var(--color-purple);
+        }
+
+        .empty-state h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .empty-state p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            max-width: 420px;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        /* Loading / Agent status board */
+        .loading-state {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .agent-loader {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin-bottom: 2rem;
+        }
+
+        .loader-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 4px solid transparent;
+            border-top-color: var(--color-purple);
+            border-bottom-color: var(--color-pink);
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite;
+        }
+
+        .loader-ring-inner {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 4px solid transparent;
+            border-left-color: var(--color-blue);
+            border-right-color: var(--color-green);
+            border-radius: 50%;
+            animation: spin-reverse 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes spin-reverse {
+            0% { transform: rotate(360deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        .loader-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            animation: pulse-slow 1.5s infinite;
+        }
+
+        @keyframes pulse-slow {
+            0%, 100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.7; }
+            50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+        }
+
+        .loading-state h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.35rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .loading-state p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Agents workflow progress step board */
+        .workflow-steps-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            width: 100%;
+            max-width: 480px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            text-align: left;
+        }
+
+        .step-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .step-row.active {
+            background: rgba(139, 92, 246, 0.05);
+            border-color: rgba(139, 92, 246, 0.15);
+        }
+
+        .step-label {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .step-icon-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            font-size: 0.75rem;
+        }
+
+        .step-row.completed .step-icon-status {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--color-green);
+        }
+
+        .step-row.active .step-icon-status {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--color-purple);
+            animation: pulse-ring 1s infinite;
+        }
+
+        .step-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+            text-transform: uppercase;
+        }
+
+        .step-row.pending .step-badge {
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .step-row.active .step-badge {
+            color: var(--color-purple);
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .step-row.completed .step-badge {
+            color: var(--color-green);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        /* Success Results Layout */
+        .results-container {
+            display: none;
+            flex-direction: column;
+            gap: 1.5rem;
+            height: 100%;
+        }
+
+        /* Result top bar */
+        .results-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to right, rgba(16, 185, 129, 0.08), rgba(59, 130, 246, 0.08));
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .success-title {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: var(--color-green);
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .results-nav {
+            display: flex;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0.25rem;
+            border-radius: 0.75rem;
+        }
+
+        .results-tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.5rem 1.25rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .results-tab-btn.active {
+            background: rgba(139, 92, 246, 0.15);
+            color: white;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        /* Result Cards Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .metric-card {
+            background: rgba(22, 24, 47, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--color-purple), var(--color-pink));
+            opacity: 0.3;
+        }
+
+        .metric-card.color-blue::after { background: var(--color-blue); }
+        .metric-card.color-green::after { background: var(--color-green); }
+        .metric-card.color-pink::after { background: var(--color-pink); }
+        .metric-card.color-warning::after { background: var(--color-warning); }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .metric-header i {
+            opacity: 0.7;
+        }
+
+        .metric-card.color-blue i { color: var(--color-blue); }
+        .metric-card.color-green i { color: var(--color-green); }
+        .metric-card.color-pink i { color: var(--color-pink); }
+        .metric-card.color-warning i { color: var(--color-warning); }
+
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            color: #ffffff;
+            margin-top: 0.25rem;
+        }
+
+        .metric-footer {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* Progress bars/rings */
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            overflow: hidden;
+            margin-top: 0.25rem;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--color-purple), var(--color-pink));
+            border-radius: 1rem;
+            width: 0%;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Result Viewport */
+        .result-view-panel {
+            background: rgba(22, 24, 47, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1.25rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+            min-height: 480px;
+        }
+
+        .view-panel-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        .view-panel-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .view-panel-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+            padding: 0.4rem 0.85rem;
+            border-radius: 0.5rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .view-panel-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* Markdown report rendering style */
+        .markdown-body {
+            color: #d1d5db;
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        .markdown-body h1, .markdown-body h2, .markdown-body h3 {
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+        }
+
+        .markdown-body h1 {
+            font-size: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 0.5rem;
+        }
+
+        .markdown-body h2 { font-size: 1.2rem; }
+        .markdown-body h3 { font-size: 1.05rem; }
+
+        .markdown-body p {
+            margin-bottom: 1rem;
+        }
+
+        .markdown-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.25rem 0;
+            font-size: 0.85rem;
+        }
+
+        .markdown-body th {
+            background: rgba(139, 92, 246, 0.1);
+            color: white;
+            font-weight: 700;
+            text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0.75rem;
+        }
+
+        .markdown-body td {
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        .markdown-body tr:nth-child(even) td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .markdown-body ul, .markdown-body ol {
+            margin-bottom: 1.25rem;
+            padding-left: 1.5rem;
+        }
+
+        .markdown-body li {
+            margin-bottom: 0.4rem;
+        }
+
+        .markdown-body blockquote {
+            border-left: 4px solid var(--color-purple);
+            background: rgba(139, 92, 246, 0.05);
+            padding: 0.75rem 1.25rem;
+            margin: 1.25rem 0;
+            border-radius: 0 0.5rem 0.5rem 0;
+            font-style: italic;
+            color: #e5e7eb;
+        }
+
+        /* Detailed metrics sub-tab */
+        .bottleneck-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .bottleneck-item {
+            background: rgba(245, 158, 11, 0.04);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .bottleneck-item i {
+            color: var(--color-warning);
+            margin-top: 0.15rem;
+            flex-shrink: 0;
+        }
+
+        .bottleneck-text h4 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.25rem;
+        }
+
+        .bottleneck-text p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Execution Trace timeline */
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 5px;
+            bottom: 5px;
+            width: 2px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .timeline-node {
+            position: relative;
+        }
+
+        .timeline-node::before {
+            content: '';
+            position: absolute;
+            left: -19px;
+            top: 6px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--color-purple);
+            border: 2px solid var(--bg-base);
+            box-shadow: 0 0 8px var(--color-purple);
+        }
+
+        .timeline-content {
+            background: rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+        }
+
+        .timeline-tag {
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--color-purple);
+            font-weight: 700;
+            padding: 0.1rem 0.4rem;
+            border-radius: 0.2rem;
+            text-transform: uppercase;
+        }
+
+        .timeline-body {
+            font-size: 0.82rem;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+
+        /* Dev stats layout */
+        .dev-stats-container {
+            margin-top: 1.5rem;
+        }
+
+        .dev-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .dev-stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 0.5rem;
+            font-size: 0.82rem;
+        }
+
+        .dev-name {
+            font-weight: 600;
+            color: white;
+        }
+
+        .dev-commits {
+            color: var(--color-blue);
+            font-weight: 700;
+        }
+
+        /* Error Banner */
+        .error-banner {
+            display: none;
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .error-banner i {
+            color: var(--color-red);
+            flex-shrink: 0;
+            margin-top: 0.15rem;
+        }
+
+        .error-message h3 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .error-message p {
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        /* Footer styling */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+            margin-top: auto;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-base);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.4);
+        }
+
+        /* Utility classes */
+        .hidden { display: none !important; }
+        .flex { display: flex !important; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-container">
+            <div class="logo-icon">
+                <i data-lucide="cpu"></i>
+            </div>
+            <div class="logo-text">
+                <h1>AI Agent MVP Tracker</h1>
+                <p>Orchestrated Project Status Pipeline</p>
+            </div>
+        </div>
+        <div class="header-links">
+            <div class="badge-live">
+                <span class="pulse-dot"></span>
+                <span>Active Pipeline Engine</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Sidebar Controls Column -->
+        <div class="sidebar-panel">
+            <div class="glass-card">
+                <div class="panel-title">
+                    <i data-lucide="sliders-horizontal"></i>
+                    <span>Pipeline Control Center</span>
+                </div>
+
+                <div class="input-tabs">
+                    <button class="tab-btn active" onclick="switchInputTab('upload')">
+                        <i data-lucide="upload-cloud"></i> Upload
+                    </button>
+                    <button class="tab-btn" onclick="switchInputTab('samples')">
+                        <i data-lucide="database"></i> Samples
+                    </button>
+                    <button class="tab-btn" onclick="switchInputTab('path')">
+                        <i data-lucide="terminal"></i> Path
+                    </button>
+                </div>
+
+                <!-- Tab 1: Upload -->
+                <div id="tab-upload" class="tab-content active">
+                    <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+                        <i data-lucide="file-json"></i>
+                        <h3>Drag & Drop JSON File</h3>
+                        <p>Or click to browse your storage</p>
+                        <input type="file" id="file-input" accept=".json" class="hidden" onchange="handleFileSelect(event)">
+                    </div>
+                    <div class="file-info" id="file-info">
+                        <span class="file-info-text">
+                            <i data-lucide="file-check"></i>
+                            <span id="file-name-text">filename.json</span>
+                        </span>
+                        <button class="remove-file-btn" onclick="removeSelectedFile()" title="Remove file">
+                            <i data-lucide="trash-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Samples -->
+                <div id="tab-samples" class="tab-content">
+                    <div class="form-group">
+                        <label class="form-label" for="sample-select">Select Preloaded Dataset</label>
+                        <select id="sample-select" class="select-input">
+                            <option value="">-- Fetching samples... --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Path -->
+                <div id="tab-path" class="tab-content">
+                    <div class="form-group">
+                        <label class="form-label" for="custom-path">JSON File Server Path</label>
+                        <input type="text" id="custom-path" class="text-input" placeholder="e.g. data/sample_jira_data.json">
+                    </div>
+                </div>
+
+
+                <button class="btn-submit" id="btn-run" onclick="triggerPipeline()">
+                    <i data-lucide="play-circle"></i>
+                    <span>Execute Pipeline</span>
+                </button>
+            </div>
+
+            <!-- Server Logging pane -->
+            <div class="glass-card server-logs-card">
+                <div class="panel-title" style="margin-bottom: 0.75rem; padding-bottom: 0.5rem;">
+                    <i data-lucide="terminal"></i>
+                    <span>Pipeline Execution Logs</span>
+                </div>
+                <ul class="log-console" id="log-console">
+                    <li style="color: var(--text-muted); font-style: italic;">Log monitor initialized. Awaiting pipeline triggers...</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right Results Column -->
+        <div class="content-panel">
+            <!-- Error Banner -->
+            <div class="error-banner" id="error-banner">
+                <i data-lucide="alert-triangle"></i>
+                <div class="error-message">
+                    <h3>Pipeline Execution Errors</h3>
+                    <p id="error-detail"></p>
+                </div>
+            </div>
+
+            <!-- Dashboard States -->
+
+            <!-- State 1: Awaiting Input (Empty) -->
+            <div class="glass-card empty-state" id="state-empty">
+                <div class="empty-icon">
+                    <i data-lucide="cpu"></i>
+                </div>
+                <h2>Sprint Analytics Pipeline</h2>
+                <p>Upload a JSON sprint log containing GitHub activity or Jira tickets on the left panel to execute multi-agent status reporting.</p>
+            </div>
+
+            <!-- State 2: Running Pipeline -->
+            <div class="glass-card loading-state" id="state-loading">
+                <div class="agent-loader">
+                    <div class="loader-ring"></div>
+                    <div class="loader-ring-inner"></div>
+                    <i data-lucide="sparkles" class="loader-icon"></i>
+                </div>
+                <h2>Orchestrating AI Agents...</h2>
+                <p>LangGraph multi-agent orchestration, consensus auditing and self-correction cycles active.</p>
+
+                <!-- Workflow status check -->
+                <div class="workflow-steps-container">
+                    <div class="step-row pending" id="step-parser">
+                        <span class="step-label">
+                            <span class="step-icon-status">1</span>
+                            <span>Data Parser Agent</span>
+                        </span>
+                        <span class="step-badge">Pending</span>
+                    </div>
+                    <div class="step-row pending" id="step-analyzer">
+                        <span class="step-label">
+                            <span class="step-icon-status">2</span>
+                            <span>Metrics Analyzer Agent</span>
+                        </span>
+                        <span class="step-badge">Pending</span>
+                    </div>
+                    <div class="step-row pending" id="step-reporter">
+                        <span class="step-label">
+                            <span class="step-icon-status">3</span>
+                            <span>Status Reporter Agent</span>
+                        </span>
+                        <span class="step-badge">Pending</span>
+                    </div>
+                    <div class="step-row pending" id="step-validator">
+                        <span class="step-label">
+                            <span class="step-icon-status">4</span>
+                            <span>Quality Validator Agent</span>
+                        </span>
+                        <span class="step-badge">Pending</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- State 3: Completed successfully -->
+            <div class="results-container" id="state-results">
+                <!-- Top details bar -->
+                <div class="results-header-bar">
+                    <div class="success-title">
+                        <i data-lucide="check-circle-2"></i>
+                        <span>ANALYSIS COMPLETED SUCCESSFULLY</span>
+                    </div>
+                    <div class="results-nav">
+                        <button class="results-tab-btn active" onclick="switchResultTab('report')">
+                            <i data-lucide="file-text"></i> Report Dashboard
+                        </button>
+                        <button class="results-tab-btn" onclick="switchResultTab('metrics')">
+                            <i data-lucide="bar-chart-3"></i> Executive KPIs
+                        </button>
+                        <button class="results-tab-btn" onclick="switchResultTab('trace')">
+                            <i data-lucide="activity"></i> Agent Trace
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KPI Quick Indicators -->
+                <div class="metrics-grid">
+                    <div class="metric-card color-blue">
+                        <div class="metric-header">
+                            <span>Story Points Completion</span>
+                            <i data-lucide="target"></i>
+                        </div>
+                        <div class="metric-value" id="kpi-sp-progress">0/0 SP</div>
+                        <div class="metric-footer">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" id="kpi-sp-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric-card color-green">
+                        <div class="metric-header">
+                            <span>Sprint Velocity</span>
+                            <i data-lucide="trending-up"></i>
+                        </div>
+                        <div class="metric-value" id="kpi-velocity">0%</div>
+                        <div class="metric-footer">
+                            <span>Completion rate against scope</span>
+                        </div>
+                    </div>
+                    <div class="metric-card color-pink">
+                        <div class="metric-header">
+                            <span>Tickets Resolved</span>
+                            <i data-lucide="check-square"></i>
+                        </div>
+                        <div class="metric-value" id="kpi-tickets">0/0</div>
+                        <div class="metric-footer" id="kpi-tickets-in-progress">
+                            <span>0 in progress, 0 in review</span>
+                        </div>
+                    </div>
+                    <div class="metric-card color-warning">
+                        <div class="metric-header">
+                            <span>PR Avg Lead Time</span>
+                            <i data-lucide="clock"></i>
+                        </div>
+                        <div class="metric-value" id="kpi-leadtime">0.0h</div>
+                        <div class="metric-footer" id="kpi-commits">
+                            <span>0 git commits detected</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Viewport Box -->
+                <div class="result-view-panel">
+                    <div class="view-panel-header">
+                        <div class="view-panel-title" id="view-panel-title">
+                            <i data-lucide="file-text"></i>
+                            <span>MVP Sprint Progress & Velocity Dashboard</span>
+                        </div>
+                        <div class="view-panel-actions">
+                            <button class="action-btn" onclick="copyReportToClipboard()" id="btn-copy-report">
+                                <i data-lucide="clipboard"></i> Copy Report
+                            </button>
+                            <button class="action-btn" onclick="downloadReportMarkdown()" id="btn-download-report">
+                                <i data-lucide="download"></i> Download .md
+                            </button>
+                        </div>
+                    </div>
+                    <div class="view-panel-body">
+                        <!-- Tab content: Rendered Markdown Report -->
+                        <div id="res-tab-report" class="results-tab-content markdown-body">
+                            <!-- Injected report HTML -->
+                        </div>
+
+                        <!-- Tab content: Executive metrics detailed view -->
+                        <div id="res-tab-metrics" class="results-tab-content hidden">
+                            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                                <div>
+                                    <h3 style="font-size: 1rem; margin-bottom: 0.75rem; color: white;">Bottlenecks & Blockers</h3>
+                                    <div class="bottleneck-list" id="bottleneck-list">
+                                        <!-- Injected bottlenecks list -->
+                                    </div>
+                                </div>
+                                <div class="dev-stats-container">
+                                    <h3 style="font-size: 1rem; margin-bottom: 0.75rem; color: white;">Developer Commit Contributions</h3>
+                                    <div class="dev-grid" id="dev-commits-grid">
+                                        <!-- Injected dev statistics -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab content: Agent logs execution timeline -->
+                        <div id="res-tab-trace" class="results-tab-content hidden">
+                            <div class="timeline" id="workflow-timeline">
+                                <!-- Injected trace timelines -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2026 AI Agent MVP Tracker Orchestrated System. Built using LangGraph, Pydantic & FastAPI.</p>
+    </footer>
+
+    <script>
+        // Global State variables
+        let selectedFile = null;
+        let activeInputTab = 'upload';
+        let activeResultTab = 'report';
+        let currentReportContent = '';
+
+        // Initialize Lucide Icons
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            fetchSamples();
+            setupDragAndDrop();
+        });
+
+        // Fetch preloaded samples from server
+        async function fetchSamples() {
+            try {
+                const res = await fetch('/api/samples');
+                if (res.ok) {
+                    const samples = await res.json();
+                    const select = document.getElementById('sample-select');
+                    select.innerHTML = '<option value="">-- Choose a sample dataset --</option>';
+                    samples.forEach(sample => {
+                        const option = document.createElement('option');
+                        option.value = sample;
+                        option.textContent = sample;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (err) {
+                console.error('Failed to fetch samples:', err);
+                appendSystemLog('Failed to fetch preloaded samples from server.', 'error');
+            }
+        }
+
+        // Setup Drag & Drop File Upload listeners
+        function setupDragAndDrop() {
+            const dropZone = document.getElementById('drop-zone');
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('dragover');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('dragover');
+                }, false);
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files.length > 0) {
+                    handleFileSelection(files[0]);
+                }
+            }, false);
+        }
+
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                handleFileSelection(files[0]);
+            }
+        }
+
+        function handleFileSelection(file) {
+            if (!file.name.endsWith('.json')) {
+                alert('Please upload JSON files only.');
+                return;
+            }
+            selectedFile = file;
+            document.getElementById('file-name-text').textContent = `${file.name} (${formatBytes(file.size)})`;
+            document.getElementById('file-info').style.display = 'flex';
+            appendSystemLog(`File loaded for upload: "${file.name}"`, 'success');
+        }
+
+        function removeSelectedFile() {
+            selectedFile = null;
+            document.getElementById('file-input').value = '';
+            document.getElementById('file-info').style.display = 'none';
+            appendSystemLog('Uploaded file removed.', 'info');
+        }
+
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+        // Tabs switching triggers (Input select)
+        function switchInputTab(tabId) {
+            activeInputTab = tabId;
+            document.querySelectorAll('.input-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            // Set active
+            const clickedBtn = Array.from(document.querySelectorAll('.input-tabs .tab-btn')).find(btn => btn.innerHTML.includes(tabId.charAt(0).toUpperCase() + tabId.slice(1)) || (tabId === 'samples' && btn.innerHTML.includes('Samples')));
+            if (clickedBtn) clickedBtn.classList.add('active');
+            
+            const targetContent = document.getElementById(`tab-${tabId}`);
+            if (targetContent) targetContent.classList.add('active');
+            
+            appendSystemLog(`Switched input mode to: "${tabId.toUpperCase()}"`, 'info');
+        }
+
+        // Result Tab switcher
+        function switchResultTab(tabId) {
+            activeResultTab = tabId;
+            document.querySelectorAll('.results-nav .results-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.results-tab-content').forEach(c => c.classList.add('hidden'));
+
+            // Find matching nav button
+            const clickedBtn = Array.from(document.querySelectorAll('.results-nav .results-tab-btn')).find(btn => btn.innerHTML.toLowerCase().includes(tabId));
+            if (clickedBtn) clickedBtn.classList.add('active');
+
+            // Show active panel
+            document.getElementById(`res-tab-${tabId}`).classList.remove('hidden');
+
+            const viewPanelTitle = document.getElementById('view-panel-title');
+            if (tabId === 'report') {
+                viewPanelTitle.innerHTML = '<i data-lucide="file-text"></i><span>MVP Sprint Progress & Velocity Dashboard</span>';
+                document.getElementById('btn-copy-report').classList.remove('hidden');
+                document.getElementById('btn-download-report').classList.remove('hidden');
+            } else if (tabId === 'metrics') {
+                viewPanelTitle.innerHTML = '<i data-lucide="bar-chart-3"></i><span>Detailed KPIs & Bottlenecks Analysis</span>';
+                document.getElementById('btn-copy-report').classList.add('hidden');
+                document.getElementById('btn-download-report').classList.add('hidden');
+            } else {
+                viewPanelTitle.innerHTML = '<i data-lucide="activity"></i><span>Multi-Agent Self-Correction Execution Trace</span>';
+                document.getElementById('btn-copy-report').classList.add('hidden');
+                document.getElementById('btn-download-report').classList.add('hidden');
+            }
+            lucide.createIcons();
+        }
+
+
+        // Output formatting utilities
+        function appendSystemLog(message, type = 'info') {
+            const consoleEl = document.getElementById('log-console');
+            const item = document.createElement('li');
+            item.className = `log-item ${type}`;
+            const time = new Date().toLocaleTimeString();
+            item.innerHTML = `<span style="opacity: 0.6; margin-right: 0.4rem;">[${time}]</span>${message}`;
+            consoleEl.appendChild(item);
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        // Loading steps board logic
+        function updateWorkflowSteps(stepName, status) {
+            const stepEl = document.getElementById(`step-${stepName}`);
+            if (!stepEl) return;
+            
+            stepEl.className = 'step-row ' + status;
+            const badge = stepEl.querySelector('.step-badge');
+            
+            if (status === 'active') {
+                badge.textContent = 'Active';
+                stepEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } else if (status === 'completed') {
+                badge.textContent = 'Completed';
+            } else {
+                badge.textContent = 'Pending';
+            }
+        }
+
+        function resetWorkflowSteps() {
+            ['parser', 'analyzer', 'reporter', 'validator'].forEach(step => {
+                updateWorkflowSteps(step, 'pending');
+            });
+        }
+
+        // MAIN EXECUTION LOGIC
+        async function triggerPipeline() {
+            const btnRun = document.getElementById('btn-run');
+            const errorBanner = document.getElementById('error-banner');
+            
+            // Hide error banner
+            errorBanner.style.display = 'none';
+
+            // Check inputs depending on active tab
+            let requestUrl = '';
+            let requestBody = null;
+            const maxRevisions = 3;
+
+            if (activeInputTab === 'upload') {
+                if (!selectedFile) {
+                    alert('Please drag-and-drop or select a JSON file first.');
+                    return;
+                }
+                requestUrl = '/api/analyze/file';
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                formData.append('max_revisions', maxRevisions);
+                requestBody = formData;
+            } else if (activeInputTab === 'samples') {
+                const sampleName = document.getElementById('sample-select').value;
+                if (!sampleName) {
+                    alert('Please select a sample dataset.');
+                    return;
+                }
+                requestUrl = '/api/analyze/path';
+                requestBody = JSON.stringify({ path: sampleName, max_revisions: maxRevisions });
+            } else {
+                const customPath = document.getElementById('custom-path').value.trim();
+                if (!customPath) {
+                    alert('Please enter a server path.');
+                    return;
+                }
+                requestUrl = '/api/analyze/path';
+                requestBody = JSON.stringify({ path: customPath, max_revisions: maxRevisions });
+            }
+
+            // UI state updates: transition to loading state
+            btnRun.disabled = true;
+            document.getElementById('state-empty').style.display = 'none';
+            document.getElementById('state-results').style.display = 'none';
+            document.getElementById('state-loading').style.display = 'flex';
+            resetWorkflowSteps();
+            
+            appendSystemLog('Starting pipeline orchestration...', 'info');
+            
+            // Simulate steps timeline triggers for visual fidelity
+            setTimeout(() => updateWorkflowSteps('parser', 'active'), 100);
+            setTimeout(() => {
+                if (document.getElementById('step-parser').className.includes('active')) {
+                    updateWorkflowSteps('parser', 'completed');
+                    updateWorkflowSteps('analyzer', 'active');
+                }
+            }, 2500);
+
+            try {
+                const headers = {};
+                if (activeInputTab !== 'upload') {
+                    headers['Content-Type'] = 'application/json';
+                }
+
+                const startTime = Date.now();
+                const response = await fetch(requestUrl, {
+                    method: 'POST',
+                    headers: headers,
+                    body: requestBody
+                });
+                
+                const responseTime = ((Date.now() - startTime) / 1000).toFixed(1);
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.detail || errData.message || 'Pipeline crashed during execution');
+                }
+
+                const state = await response.json();
+                
+                // Complete all steps in UI
+                ['parser', 'analyzer', 'reporter', 'validator'].forEach(step => {
+                    updateWorkflowSteps(step, 'completed');
+                });
+                
+                appendSystemLog(`Pipeline execution finished successfully in ${responseTime}s.`, 'success');
+                displayResults(state);
+
+            } catch (err) {
+                console.error(err);
+                appendSystemLog(`Pipeline run failed: ${err.message}`, 'error');
+                
+                // Show error banner
+                document.getElementById('error-detail').textContent = err.message;
+                errorBanner.style.display = 'flex';
+                
+                // Fall back to empty state or last successful
+                document.getElementById('state-loading').style.display = 'none';
+                document.getElementById('state-empty').style.display = 'flex';
+                
+            } finally {
+                btnRun.disabled = false;
+            }
+        }
+
+        // Render response data into Results view components
+        function displayResults(state) {
+            // Hide loading state, show results container
+            document.getElementById('state-loading').style.display = 'none';
+            document.getElementById('state-results').style.display = 'flex';
+
+            // 1. Render Report Tab (Markdown conversion)
+            const reportContent = state.report || '# No report compiled';
+            currentReportContent = reportContent;
+            document.getElementById('res-tab-report').innerHTML = marked.parse(reportContent);
+
+            // 2. Populate executive indicators (KPIs)
+            const metrics = state.metrics || {};
+            
+            // Story points progress KPI
+            const completedSp = metrics.completed_story_points || 0;
+            const totalSp = metrics.total_story_points || 0;
+            document.getElementById('kpi-sp-progress').textContent = `${completedSp}/${totalSp} SP`;
+            
+            // Story points bar
+            const spPercent = totalSp > 0 ? (completedSp / totalSp * 100).toFixed(1) : 0;
+            document.getElementById('kpi-sp-bar').style.width = `${spPercent}%`;
+
+            // Velocity KPI
+            document.getElementById('kpi-velocity').textContent = `${metrics.sprint_velocity_percent || 0}%`;
+
+            // Tickets resolved KPI
+            const completedTickets = metrics.completed_tickets || 0;
+            const totalTickets = metrics.total_tickets || 0;
+            document.getElementById('kpi-tickets').textContent = `${completedTickets}/${totalTickets}`;
+            
+            const inProgress = metrics.in_progress_tickets || 0;
+            const inReview = metrics.in_review_tickets || 0;
+            const todo = metrics.to_do_tickets || 0;
+            document.getElementById('kpi-tickets-in-progress').innerHTML = 
+                `<span>${inProgress} in progress, ${inReview} review, ${todo} todo</span>`;
+
+            // Lead times & commits KPI
+            document.getElementById('kpi-leadtime').textContent = `${(metrics.average_pr_lead_time_hours || 0).toFixed(1)}h`;
+            document.getElementById('kpi-commits').textContent = 
+                `${metrics.commits_count || 0} commits (${metrics.linked_commits_count || 0} linked)`;
+
+            // 3. Populate detailed metrics tab (blockers, developer stats)
+            // Bottleneck Alert List
+            const bottlenecks = metrics.bottlenecks || [];
+            const bottleneckContainer = document.getElementById('bottleneck-list');
+            if (bottlenecks.length === 0) {
+                bottleneckContainer.innerHTML = `
+                    <div style="color: var(--text-muted); font-size: 0.85rem; font-style: italic; padding: 0.5rem 0;">
+                        No active bottlenecks or priority issues identified.
+                    </div>
+                `;
+            } else {
+                bottleneckContainer.innerHTML = '';
+                bottlenecks.forEach(b => {
+                    const item = document.createElement('div');
+                    item.className = 'bottleneck-item';
+                    item.innerHTML = `
+                        <i data-lucide="alert-octagon"></i>
+                        <div class="bottleneck-text">
+                            <h4>Sprint Obstacle</h4>
+                            <p>${escapeHTML(b)}</p>
+                        </div>
+                    `;
+                    bottleneckContainer.appendChild(item);
+                });
+            }
+
+            // Dev commit stats
+            const devCommits = metrics.developer_commit_counts || {};
+            const devGrid = document.getElementById('dev-commits-grid');
+            if (Object.keys(devCommits).length === 0) {
+                devGrid.innerHTML = `
+                    <div style="color: var(--text-muted); font-size: 0.85rem; font-style: italic; grid-column: 1/-1;">
+                        No commits data found in repository logs.
+                    </div>
+                `;
+            } else {
+                devGrid.innerHTML = '';
+                Object.entries(devCommits).forEach(([dev, count]) => {
+                    const row = document.createElement('div');
+                    row.className = 'dev-stat-row';
+                    row.innerHTML = `
+                        <span class="dev-name">${escapeHTML(dev)}</span>
+                        <span class="dev-commits">${count} commit${count === 1 ? '' : 's'}</span>
+                    `;
+                    devGrid.appendChild(row);
+                });
+            }
+
+            // 4. Trace tab (Time-sequenced steps)
+            const logs = state.logs || [];
+            const errors = state.errors || [];
+            const timeline = document.getElementById('workflow-timeline');
+            timeline.innerHTML = '';
+
+            if (logs.length === 0) {
+                timeline.innerHTML = '<div style="color: var(--text-muted); font-style: italic;">No workflow trace logs logged.</div>';
+            } else {
+                logs.forEach((log, idx) => {
+                    // Match step identifiers
+                    let tag = 'Workflow';
+                    if (log.toLowerCase().includes('parse') || log.toLowerCase().includes('github activity')) tag = 'Parser';
+                    else if (log.toLowerCase().includes('metrics') || log.toLowerCase().includes('velocity')) tag = 'Analyzer';
+                    else if (log.toLowerCase().includes('report') || log.toLowerCase().includes('markdown')) tag = 'Reporter';
+                    else if (log.toLowerCase().includes('validation') || log.toLowerCase().includes('qa')) tag = 'Validator';
+
+                    const node = document.createElement('div');
+                    node.className = 'timeline-node';
+                    node.innerHTML = `
+                        <div class="timeline-content">
+                            <div class="timeline-header">
+                                <span class="timeline-tag">${tag}</span>
+                                <span>Step ${idx + 1}</span>
+                            </div>
+                            <div class="timeline-body">${escapeHTML(log)}</div>
+                        </div>
+                    `;
+                    timeline.appendChild(node);
+                });
+            }
+
+            // Log error elements if present
+            if (errors.length > 0) {
+                errors.forEach(err => {
+                    appendSystemLog(`[Agent Discrepancy Alert] ${err}`, 'error');
+                });
+            }
+
+            // Switch to the report tab by default on display
+            switchResultTab('report');
+            lucide.createIcons();
+        }
+
+        // Clipboard copy functionality
+        function copyReportToClipboard() {
+            if (!currentReportContent) return;
+            navigator.clipboard.writeText(currentReportContent)
+                .then(() => {
+                    const btn = document.getElementById('btn-copy-report');
+                    const origText = btn.innerHTML;
+                    btn.innerHTML = '<i data-lucide="check"></i> Copied!';
+                    btn.style.borderColor = 'var(--color-green)';
+                    btn.style.color = 'var(--color-green)';
+                    lucide.createIcons();
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = origText;
+                        btn.style.borderColor = '';
+                        btn.style.color = '';
+                        lucide.createIcons();
+                    }, 2000);
+                    
+                    appendSystemLog('Markdown report copied to clipboard.', 'success');
+                })
+                .catch(err => {
+                    console.error('Failed to copy report:', err);
+                    alert('Could not copy report text. Please select and copy manually.');
+                });
+        }
+
+        // Markdown file downloader
+        function downloadReportMarkdown() {
+            if (!currentReportContent) return;
+            const element = document.createElement('a');
+            const file = new Blob([currentReportContent], {type: 'text/markdown'});
+            element.href = URL.createObjectURL(file);
+            element.download = `sprint_report_${new Date().toISOString().slice(0, 10)}.md`;
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+            
+            appendSystemLog('Markdown report download triggered.', 'info');
+        }
+
+        // HTML escaping helper
+        function escapeHTML(str) {
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    </script>
+</body>
+</html>
